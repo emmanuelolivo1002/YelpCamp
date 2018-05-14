@@ -13,15 +13,26 @@ mongoose.connect("mongodb://localhost/yelp_camp");
 // Setup Schema
 var campgroundSchema = new mongoose.Schema({
   name: String,
-  image: String
+  image: String,
+  description: String
 });
 // Create model
 var Campground = mongoose.model("Campground", campgroundSchema);
+
+
+// Test create
+// Campground.create({
+//   name: "Bible Camp",
+//   image: "http://www.universitylutherangf.org/wp-content/uploads/2012/04/camp_2940c.jpg",
+//   description: "It's a bible camp..."
+// });
+
 
 app.get("/", function (req, res) {
   res.render("landing");
 });
 
+// INDEX - Show all campgrounds
 app.get("/campgrounds", function (req, res) {
 
   // Retrieve data from database
@@ -32,18 +43,19 @@ app.get("/campgrounds", function (req, res) {
       console.log(err);
     } else {
       // Render with data Retrieved
-      res.render("campgrounds", {campgrounds});
+      res.render("index", {campgrounds});
     }
   });
 });
 
-
+// CREATE - Add new campground to database
 app.post("/campgrounds", function (req, res) {
   // Get data from form
   var name = req.body.name;
   var image = req.body.image;
+  var description = req.body.description;
 
-  var newCamp = {name: name, image: image}
+  var newCamp = {name: name, image: image, description: description }
 
   // Create new campground and save to database
   Campground.create(newCamp, function(err, newlyCreated) {
@@ -57,9 +69,25 @@ app.post("/campgrounds", function (req, res) {
 
 });
 
+// NEW - show form to create campgrounds
 app.get("/campgrounds/new", function (req, res) {
   res.render("new.ejs");
 });
+
+
+// SHOW - shows more info about that campground
+app.get("/campgrounds/:id", function(req, res) {
+  //Find campground with provided id
+  Campground.findById(req.params.id, function(err, foundCamp) {
+    if (err) {
+      console.log(err);
+    } else {
+      // Render show template with correct info
+      res.render("show", {campground: foundCamp});
+    }
+  });
+});
+
 
 app.listen(process.env.PORT || 3000, process.env.IP, function () {
   console.log("Listening to server");
