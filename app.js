@@ -13,10 +13,6 @@ app.use(bodyParser.urlencoded({extended: true}));
 mongoose.connect("mongodb://localhost/yelp_camp");
 
 
-
-
-
-
 app.get("/", function (req, res) {
   res.render("landing");
 });
