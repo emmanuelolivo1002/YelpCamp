@@ -2,6 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
+const Campground = require('./models/campground');
+
 var app = express();
 
 app.set("view engine", "ejs");
@@ -10,22 +12,9 @@ app.use(bodyParser.urlencoded({extended: true}));
 // Connect to database
 mongoose.connect("mongodb://localhost/yelp_camp");
 
-// Setup Schema
-var campgroundSchema = new mongoose.Schema({
-  name: String,
-  image: String,
-  description: String
-});
-// Create model
-var Campground = mongoose.model("Campground", campgroundSchema);
 
 
-// Test create
-// Campground.create({
-//   name: "Bible Camp",
-//   image: "http://www.universitylutherangf.org/wp-content/uploads/2012/04/camp_2940c.jpg",
-//   description: "It's a bible camp..."
-// });
+
 
 
 app.get("/", function (req, res) {
