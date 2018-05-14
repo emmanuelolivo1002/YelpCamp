@@ -1,18 +1,22 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+
 var app = express();
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 
-//Temp array
-var campgrounds = [
-  {name: "Salmon", image: "https://i0.wp.com/scoutingmagazine.org/wp-content/uploads/2008/05/Summer-Camp.jpg?ssl=1"},
-  {name: "Tuna", image: "http://www.camp-liza.com/wp-content/uploads/2017/10/20170708_093155_HDR-1.jpg"},
-  {name: "Mars", image: "http://www.sanctuaryretreats.com/media/5313445/sanctuary-baines-camp-starbath.jpg"}
-];
+// Connect to database
+mongoose.connect("mongodb://localhost/yelp_camp");
 
-
+// Setup Schema
+var campgroundSchema = new mongoose.Schema({
+  name: String,
+  image: String
+});
+// Create model
+var Campground = mongoose.model("Campground", campgroundSchema);
 
 app.get("/", function (req, res) {
   res.render("landing");
@@ -20,8 +24,17 @@ app.get("/", function (req, res) {
 
 app.get("/campgrounds", function (req, res) {
 
-  res.render("campgrounds", {campgrounds});
+  // Retrieve data from database
 
+  Campground.find({}, function(err, campgrounds) {
+    if (err) {
+      console.log("Error retrieving from database");
+      console.log(err);
+    } else {
+      // Render with data Retrieved
+      res.render("campgrounds", {campgrounds});
+    }
+  });
 });
 
 
@@ -32,10 +45,16 @@ app.post("/campgrounds", function (req, res) {
 
   var newCamp = {name: name, image: image}
 
-  campgrounds.push(newCamp);
+  // Create new campground and save to database
+  Campground.create(newCamp, function(err, newlyCreated) {
+    if (err) {
+      console.log(err);
+    } else {
+      // Redirect to campgrounds page
+      res.redirect("/campgrounds");
+    }
+  });
 
-  // Redirect to campgrounds page
-  res.redirect("/campgrounds");
 });
 
 app.get("/campgrounds/new", function (req, res) {
