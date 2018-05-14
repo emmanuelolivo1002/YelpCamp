@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 
 const seedDB = require('./seeds');
 const Campground = require('./models/campground');
+const Comment = require('./models/comment');
 
 var app = express();
 
@@ -32,7 +33,7 @@ app.get("/campgrounds", function (req, res) {
       console.log(err);
     } else {
       // Render with data Retrieved
-      res.render("index", {campgrounds});
+      res.render("campgrounds/index", {campgrounds});
     }
   });
 });
@@ -60,7 +61,7 @@ app.post("/campgrounds", function (req, res) {
 
 // NEW - show form to create campgrounds
 app.get("/campgrounds/new", function (req, res) {
-  res.render("new.ejs");
+  res.render("campgrounds/new");
 });
 
 
@@ -73,11 +74,51 @@ app.get("/campgrounds/:id", function(req, res) {
     } else {
       console.log(foundCamp);
       // Render show template with correct info
-      res.render("show", {campground: foundCamp});
+      res.render("campgrounds/show", {campground: foundCamp});
     }
   });
 });
 
+
+// COMMENTS ROUTES
+
+//NEW - send to form to create comments
+app.get("/campgrounds/:id/comments/new", function(req, res) {
+  //Find campground
+  Campground.findById(req.params.id, function(err, returnedCamp) {
+    if (err) {
+      console.log(err);
+    } else {
+
+      res.render("comments/new", {campground: returnedCamp});
+    }
+  });
+});
+
+// CREATE - create the comment from the form
+app.post("/campgrounds/:id/comments", function(req, res) {
+  //Find campground
+  Campground.findById(req.params.id, function(err, returnedCamp) {
+    if (err) {
+      console.log(err);
+    } else {
+      // Create comment
+      Comment.create(req.body.comment, function(err, createdComment) {
+        if (err) {
+          console.log(err);
+        } else {
+          // Associate comment to campground
+          returnedCamp.comments.push(createdComment);
+          returnedCamp.save();
+
+          // Redirect to campground
+          res.redirect("/campgrounds/" + returnedCamp._id);
+        }
+      });
+
+    }
+  });
+});
 
 app.listen(process.env.PORT || 3000, process.env.IP, function () {
   console.log("Listening to server");
