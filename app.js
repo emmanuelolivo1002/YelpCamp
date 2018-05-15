@@ -2,31 +2,21 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
+const seedDB = require('./seeds');
+const Campground = require('./models/campground');
+const Comment = require('./models/comment');
+
 var app = express();
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 
+
 // Connect to database
 mongoose.connect("mongodb://localhost/yelp_camp");
 
-// Setup Schema
-var campgroundSchema = new mongoose.Schema({
-  name: String,
-  image: String,
-  description: String
-});
-// Create model
-var Campground = mongoose.model("Campground", campgroundSchema);
-
-
-// Test create
-// Campground.create({
-//   name: "Bible Camp",
-//   image: "http://www.universitylutherangf.org/wp-content/uploads/2012/04/camp_2940c.jpg",
-//   description: "It's a bible camp..."
-// });
-
+//Seed database
+seedDB();
 
 app.get("/", function (req, res) {
   res.render("landing");
@@ -43,7 +33,7 @@ app.get("/campgrounds", function (req, res) {
       console.log(err);
     } else {
       // Render with data Retrieved
-      res.render("index", {campgrounds});
+      res.render("campgrounds/index", {campgrounds});
     }
   });
 });
@@ -71,23 +61,64 @@ app.post("/campgrounds", function (req, res) {
 
 // NEW - show form to create campgrounds
 app.get("/campgrounds/new", function (req, res) {
-  res.render("new.ejs");
+  res.render("campgrounds/new");
 });
 
 
 // SHOW - shows more info about that campground
 app.get("/campgrounds/:id", function(req, res) {
   //Find campground with provided id
-  Campground.findById(req.params.id, function(err, foundCamp) {
+  Campground.findById(req.params.id).populate("comments").exec(function(err, foundCamp) {
     if (err) {
       console.log(err);
     } else {
+      console.log(foundCamp);
       // Render show template with correct info
-      res.render("show", {campground: foundCamp});
+      res.render("campgrounds/show", {campground: foundCamp});
     }
   });
 });
 
+
+// COMMENTS ROUTES
+
+//NEW - send to form to create comments
+app.get("/campgrounds/:id/comments/new", function(req, res) {
+  //Find campground
+  Campground.findById(req.params.id, function(err, returnedCamp) {
+    if (err) {
+      console.log(err);
+    } else {
+
+      res.render("comments/new", {campground: returnedCamp});
+    }
+  });
+});
+
+// CREATE - create the comment from the form
+app.post("/campgrounds/:id/comments", function(req, res) {
+  //Find campground
+  Campground.findById(req.params.id, function(err, returnedCamp) {
+    if (err) {
+      console.log(err);
+    } else {
+      // Create comment
+      Comment.create(req.body.comment, function(err, createdComment) {
+        if (err) {
+          console.log(err);
+        } else {
+          // Associate comment to campground
+          returnedCamp.comments.push(createdComment);
+          returnedCamp.save();
+
+          // Redirect to campground
+          res.redirect("/campgrounds/" + returnedCamp._id);
+        }
+      });
+
+    }
+  });
+});
 
 app.listen(process.env.PORT || 3000, process.env.IP, function () {
   console.log("Listening to server");
