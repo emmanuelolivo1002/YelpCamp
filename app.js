@@ -1,10 +1,13 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const passport = require('passport');
+const LocalStrategy = require('passport-local');
 
 const seedDB = require('./seeds');
 const Campground = require('./models/campground');
 const Comment = require('./models/comment');
+const User = require('./models/user');
 
 var app = express();
 
@@ -18,6 +21,25 @@ mongoose.connect("mongodb://localhost/yelp_camp");
 //Seed database
 seedDB();
 
+// Passport config
+app.use(require("express-session")({
+  secret: "opretnqetklr",
+  resave: false,
+  saveUninitialized: false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+
+app.use(function(req, res, next) {
+  res.locals.currentUser = req.user;
+  next();
+});
+
+// ROUTES
 app.get("/", function (req, res) {
   res.render("landing");
 });
@@ -72,7 +94,6 @@ app.get("/campgrounds/:id", function(req, res) {
     if (err) {
       console.log(err);
     } else {
-      console.log(foundCamp);
       // Render show template with correct info
       res.render("campgrounds/show", {campground: foundCamp});
     }
@@ -83,7 +104,7 @@ app.get("/campgrounds/:id", function(req, res) {
 // COMMENTS ROUTES
 
 //NEW - send to form to create comments
-app.get("/campgrounds/:id/comments/new", function(req, res) {
+app.get("/campgrounds/:id/comments/new", isLoggedIn, function(req, res) {
   //Find campground
   Campground.findById(req.params.id, function(err, returnedCamp) {
     if (err) {
@@ -96,7 +117,7 @@ app.get("/campgrounds/:id/comments/new", function(req, res) {
 });
 
 // CREATE - create the comment from the form
-app.post("/campgrounds/:id/comments", function(req, res) {
+app.post("/campgrounds/:id/comments", isLoggedIn, function(req, res) {
   //Find campground
   Campground.findById(req.params.id, function(err, returnedCamp) {
     if (err) {
@@ -119,6 +140,59 @@ app.post("/campgrounds/:id/comments", function(req, res) {
     }
   });
 });
+
+
+// AUTH ROUTES
+
+// Show register form
+app.get("/register", function(req, res) {
+  res.render("register");
+});
+
+// Handle user registration
+app.post("/register", function(req, res) {
+  var newUser = new User({username: req.body.username});
+  User.register(newUser, req.body.password, function(err, user) {
+    if (err) {
+      console.log(err);
+      return res.render('register');
+    } else {
+      passport.authenticate("local")(req, res, function() {
+        res.redirect("/campgrounds");
+      });
+    }
+  });
+});
+
+// Show login form
+app.get("/login", function(req, res) {
+  res.render("login");
+});
+
+// Handle user login
+app.post("/login", passport.authenticate("local",
+  {
+    successRedirect: "/campgrounds",
+    failureRedirect: "/login"
+  }), function(req, res) {
+});
+
+//Logout
+
+app.get("/logout", function(req, res) {
+  req.logout();
+  res.redirect("/campgrounds");
+});
+
+
+// MIDDLEWARE
+function isLoggedIn(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect("/login");
+}
+
 
 app.listen(process.env.PORT || 3000, process.env.IP, function () {
   console.log("Listening to server");

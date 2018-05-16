@@ -13,15 +13,23 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="#">Login<span class="sr-only">(current)</span></a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Sign Up</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Log Out</a>
-          </li>
+          <% if (!currentUser) {%>
+            <li class="nav-item">
+              <a class="nav-link" href="/login">Login<span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/register">Sign Up</a>
+            </li>
+          <% } else { %>
+            <li class="nav-item">
+              <span class="navbar-text">
+                <strong>Hi <%=currentUser.username%>!</strong>
+              </span>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/logout">Log Out</a>
+            </li>
+          <% } %>
         </ul>
       </div>
     </nav>
