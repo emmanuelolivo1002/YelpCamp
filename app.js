@@ -89,7 +89,6 @@ app.get("/campgrounds/:id", function(req, res) {
     if (err) {
       console.log(err);
     } else {
-      console.log(foundCamp);
       // Render show template with correct info
       res.render("campgrounds/show", {campground: foundCamp});
     }
@@ -100,7 +99,7 @@ app.get("/campgrounds/:id", function(req, res) {
 // COMMENTS ROUTES
 
 //NEW - send to form to create comments
-app.get("/campgrounds/:id/comments/new", function(req, res) {
+app.get("/campgrounds/:id/comments/new", isLoggedIn, function(req, res) {
   //Find campground
   Campground.findById(req.params.id, function(err, returnedCamp) {
     if (err) {
@@ -113,7 +112,7 @@ app.get("/campgrounds/:id/comments/new", function(req, res) {
 });
 
 // CREATE - create the comment from the form
-app.post("/campgrounds/:id/comments", function(req, res) {
+app.post("/campgrounds/:id/comments", isLoggedIn, function(req, res) {
   //Find campground
   Campground.findById(req.params.id, function(err, returnedCamp) {
     if (err) {
@@ -173,7 +172,21 @@ app.post("/login", passport.authenticate("local",
   }), function(req, res) {
 });
 
+//Logout
 
+app.get("/logout", function(req, res) {
+  req.logout();
+  res.redirect("/campgrounds");
+});
+
+
+// MIDDLEWARE
+function isLoggedIn(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect("/login");
+}
 
 
 app.listen(process.env.PORT || 3000, process.env.IP, function () {
