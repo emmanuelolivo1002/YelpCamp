@@ -1,0 +1,22 @@
+<% include ../partials/header.ejs %>
+
+<div class="container ">
+
+
+  <h1 class="mt-5 text-center">Edit Comment</h1>
+
+  <div class="container" style="width: 33%; margin: 0 auto;">
+    <form method="POST" action="/campgrounds/<%= campground_id %>/comments/<%= comment._id %>?_method=PUT" >
+      <div class="form-group">
+        <label for="text">Comment</label>
+        <input type="text" class="form-control" name="comment[text]" value="<%= comment.text %>"/>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Submit</button>
+    </form>
+    <p class="mt-2">
+      <a href="/campgrounds">Go Back</a>
+    </p>
+  </div>
+
+</div>
+<% include ../partials/footer.ejs %>
