@@ -8,10 +8,6 @@
   <div class="container" style="width: 33%; margin: 0 auto;">
     <form method="POST" action="/campgrounds/<%= campground._id %>/comments" >
       <div class="form-group">
-        <label for="author">Name</label>
-        <input type="text" class="form-control" placeholder="Your name" name="comment[author]"/>
-      </div>
-      <div class="form-group">
         <label for="text">Comment</label>
         <input type="text" class="form-control" placeholder="Enter your comment" name="comment[text]"/>
       </div>
