@@ -18,13 +18,18 @@ const indexRoutes = require('./routes/index');
 
 var app = express();
 
+// Connect to database
+mongoose.connect("mongodb://localhost/yelp_camp");
+
+//Connect stylesheet
+app.use(express.static(__dirname + "/public"));
+
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(methodOverride("_method"));
 
 
-// Connect to database
-mongoose.connect("mongodb://localhost/yelp_camp");
+
 
 //Seed database
 // seedDB();
