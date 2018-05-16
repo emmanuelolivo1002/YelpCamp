@@ -21,6 +21,20 @@ mongoose.connect("mongodb://localhost/yelp_camp");
 //Seed database
 seedDB();
 
+// Passport config
+app.use(require("express-session")({
+  secret: "opretnqetklr",
+  resave: false,
+  saveUninitialized: false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+
+// ROUTES
 app.get("/", function (req, res) {
   res.render("landing");
 });
@@ -122,6 +136,31 @@ app.post("/campgrounds/:id/comments", function(req, res) {
     }
   });
 });
+
+
+// AUTH ROUTES
+
+// Show register form
+app.get("/register", function(req, res) {
+  res.render("register");
+});
+
+// Handle user registration
+app.post("/register", function(req, res) {
+  var newUser = new User({username: req.body.username});
+  User.register(newUser, req.body.password, function(err, user) {
+    if (err) {
+      console.log(err);
+      return res.render('register');
+    } else {
+      passport.authenticate("local")(req, res, function() {
+        res.redirect("/campgrounds");
+      });
+    }
+  });
+});
+
+
 
 app.listen(process.env.PORT || 3000, process.env.IP, function () {
   console.log("Listening to server");
