@@ -19,8 +19,11 @@ const indexRoutes = require('./routes/index');
 
 var app = express();
 
+
 // Connect to database
-mongoose.connect("mongodb://localhost/yelp_camp");
+mongoose.connect(process.env.DATABASEURL);
+
+
 
 //Connect stylesheet
 app.use(express.static(__dirname + "/public"));
