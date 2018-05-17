@@ -28,12 +28,13 @@ router.post("/", middleware.isLoggedIn, function (req, res) {
   // Get data from form
   var name = req.body.name;
   var image = req.body.image;
+  var price = req.body.price;
   var description = req.body.description;
   var author = {
       id: req.user._id,
       username: req.user.username
   }
-  var newCamp = {name: name, image: image, description: description, author: author }
+  var newCamp = {name: name, image: image, description: description, author: author, price: price}
 
   // Create new campground and save to database
   Campground.create(newCamp, function(err, newlyCreated) {
@@ -96,6 +97,8 @@ router.delete("/:id", middleware.checkCampgroundOwnership, function(req, res) {
       console.log(err);
       res.redirect("/campgrounds");
     } else {
+      // Show message
+      req.flash("success", "Campground deleted!");
       res.redirect("/campgrounds");
     }
   });
