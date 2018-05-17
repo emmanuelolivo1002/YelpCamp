@@ -35,7 +35,7 @@ router.post("/register", function(req, res) {
 
 // Show login form
 router.get("/login", function(req, res) {
-  res.render("login", {message: req.flash("error")});
+  res.render("login");
 });
 
 // Handle user login
@@ -50,6 +50,7 @@ router.post("/login", passport.authenticate("local",
 
 router.get("/logout", function(req, res) {
   req.logout();
+  req.flash("success", "Logged you out!");
   res.redirect("/campgrounds");
 });
 
